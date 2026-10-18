@@ -21,7 +21,7 @@ test("días seguidos suben la racha", () => {
   for (const dia of ["2026-10-10", "2026-10-11", "2026-10-12"]) {
     habito = marcarDia(habito, dia).habito;
   }
-  assert.equal(habito.rachaActual, 99);
+  assert.equal(habito.rachaActual, 3);
   assert.equal(habito.mejorRacha, 3);
 });
 
