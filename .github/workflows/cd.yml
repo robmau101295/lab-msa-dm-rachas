@@ -1,0 +1,69 @@
+# CD del microservicio: se dispara cuando se CREA UN TAG (lo crea el CI).
+#   tag v...  -> prod
+#   tag bv... -> qa
+#   tag av... -> dev
+# prepare -> (freeze) -> approval -> sync_tag
+name: CD
+
+on:
+  push:
+    tags:
+      - "av*"
+      - "bv*"
+      - "v*"
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.determine.outputs.ENVIRONMENT }}
+    steps:
+      - name: Determine environment from tag
+        id: determine
+        run: |
+          set -euo pipefail
+          case "${GITHUB_REF_NAME}" in
+            bv*) environment="qa"   ;;
+            av*) environment="dev"  ;;
+            v*)  environment="prod" ;;
+            *)   echo "::error::Tag desconocido: ${GITHUB_REF_NAME}"; exit 1 ;;
+          esac
+          echo "::notice::Tag ${GITHUB_REF_NAME} -> ambiente ${environment}"
+          echo "ENVIRONMENT=${environment}" >> "${GITHUB_OUTPUT}"
+
+      # Freeze: si la variable FREEZE_<AMBIENTE>_ENABLED vale "true", se bloquea
+      # el despliegue (Fase 8).
+      - name: Check freeze
+        run: |
+          set -euo pipefail
+          case "${ENVIRONMENT}" in
+            qa)   frozen="${FREEZE_QA_ENABLED}"   ;;
+            prod) frozen="${FREEZE_PROD_ENABLED}" ;;
+            *)    frozen="false" ;;
+          esac
+          if [ "${frozen}" = "true" ]; then
+            echo "::error::Ambiente ${ENVIRONMENT} en FREEZE. Despliegue bloqueado."
+            exit 1
+          fi
+          echo "::notice::Sin freeze para ${ENVIRONMENT}"
+        env:
+          ENVIRONMENT: ${{ steps.determine.outputs.ENVIRONMENT }}
+          FREEZE_PROD_ENABLED: ${{ vars.FREEZE_PROD_ENABLED || 'false' }}
+          FREEZE_QA_ENABLED: ${{ vars.FREEZE_QA_ENABLED || 'false' }}
+
+  approval:
+    needs: [prepare]
+    uses: robmau101295/lab-tpl-do-pipeline-reusable-workflows/.github/workflows/approval.yml@v1.0.0
+    with:
+      environment: ${{ needs.prepare.outputs.environment }}
+
+  sync_tag:
+    needs: [prepare, approval]
+    uses: robmau101295/lab-tpl-do-pipeline-reusable-workflows/.github/workflows/sync-tag.yml@v1.0.0
+    with:
+      environment: ${{ needs.prepare.outputs.environment }}
+      gitops-repository: ${{ vars.GITOPS_REPOSITORY }}
+      git-user-name: ${{ vars.GIT_USER_NAME }}
+      git-user-email: ${{ vars.GIT_USER_EMAIL }}
+    secrets:
+      LAB_PAT_WRITE_CONTENT: ${{ secrets.LAB_PAT_WRITE_CONTENT }}

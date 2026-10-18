@@ -1,0 +1,29 @@
+# CI del microservicio: se dispara con cada push a una RAMA (no con tags).
+#   rama main       -> ambiente prod -> tag v...
+#   rama release/*  -> ambiente qa   -> tag bv...
+#   cualquier otra  -> ambiente dev  -> tag av...
+# Toda la lógica vive en la plantilla reutilizable (fijada en v1.0.0).
+name: CI
+
+on:
+  push:
+    branches:
+      - "**"
+    paths-ignore:
+      - "README.md"
+  workflow_dispatch:
+
+jobs:
+  ci:
+    permissions:
+      id-token: write
+      contents: read
+    uses: robmau101295/lab-tpl-do-pipeline-reusable-workflows/.github/workflows/docker-ci.yml@v1.0.0
+    with:
+      aws-account-id: ${{ vars.AWS_ACCOUNT_ID }}
+      aws-region: ${{ vars.AWS_REGION }}
+      ecr-push-role-arn: ${{ vars.AWS_ECR_PUSH_ROLE_ARN }}
+      git-user-name: ${{ vars.GIT_USER_NAME }}
+      git-user-email: ${{ vars.GIT_USER_EMAIL }}
+    secrets:
+      LAB_PAT_WRITE_CONTENT: ${{ secrets.LAB_PAT_WRITE_CONTENT }}

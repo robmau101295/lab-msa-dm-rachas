@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rachas</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="marca">
+      <span class="logo">🔥</span>
+      <div>
+        <h1>Rachas</h1>
+        <p id="saludo" class="tenue">Cargando…</p>
+      </div>
+    </div>
+    <span id="ambiente" class="chip">…</span>
+  </header>
+
+  <main>
+    <section class="tarjeta">
+      <form id="form-nuevo" autocomplete="off">
+        <input id="nombre" name="nombre" placeholder="Nuevo hábito (ej. Leer 20 minutos)" maxlength="60" required>
+        <button type="submit">Agregar</button>
+      </form>
+      <div id="simulacion" class="simulacion" hidden>
+        <label for="dia">Día simulado</label>
+        <input type="date" id="dia">
+        <button type="button" id="dia-siguiente" class="secundario">+1 día</button>
+        <span class="tenue">Solo en ambientes con <code>PERMITIR_FECHA_SIMULADA=true</code></span>
+      </div>
+      <p id="mensaje" class="mensaje" role="status"></p>
+    </section>
+
+    <section id="habitos" class="habitos" aria-live="polite"></section>
+
+    <details class="tarjeta origen">
+      <summary>¿De dónde sale cada dato de esta página?</summary>
+      <table>
+        <thead><tr><th>Dato</th><th>Valor</th><th>Viene de</th></tr></thead>
+        <tbody id="origen"></tbody>
+      </table>
+      <p class="tenue">Recarga la página varias veces: si hay 2 réplicas, el <b>pod</b> cambia
+        (el Service reparte las peticiones). Los hábitos son los mismos porque viven en DynamoDB, no en el pod.</p>
+    </details>
+  </main>
+
+  <template id="tpl-habito">
+    <article class="habito">
+      <div class="fuego"><span class="emoji">🔥</span><span class="numero"></span></div>
+      <div class="detalle">
+        <h2 class="nombre"></h2>
+        <p class="tenue stats"></p>
+      </div>
+      <div class="acciones">
+        <button class="marcar">Marcar hoy</button>
+        <button class="borrar secundario" title="Borrar (pide el token de administrador)">✕</button>
+      </div>
+    </article>
+  </template>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
