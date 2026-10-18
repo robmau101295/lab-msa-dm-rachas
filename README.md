@@ -32,3 +32,5 @@ PERMITIR_FECHA_SIMULADA=true RACHAS_ADMIN_TOKEN=local123 npm start
 | `DYNAMODB_TABLE`, `PERMITIR_FECHA_SIMULADA` | ConfigMap del chart | `.../<env>/infrastructure.yaml` |
 | `RACHAS_ADMIN_TOKEN` | Secret creado por External Secrets | Secrets Manager `eks-<cluster>-demo-app/secrets` |
 | `AWS_ROLE_ARN`, `AWS_WEB_IDENTITY_TOKEN_FILE` | EKS (IRSA), por la anotación del ServiceAccount | `lab-iac-do-k8s-demo` |
+
+Nota: cambio solo de documentación.
